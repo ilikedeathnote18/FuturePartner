@@ -110,17 +110,22 @@
 </div>
 
 <script>
-    // 未來女友圖片庫 (請在這裡換成你雲端資料夾的真實圖片連結)
-    // 為了示範，我先用網路上的假圖
+    // ⚠️【請將這裡換成你剛剛複製的 Google Apps Script 網址】⚠️
+    const scriptURL = "https://script.google.com/macros/s/AKfycby7A67cffg8adasBWZo0eeO61DHmF3CHHchedP6mPIf4vFXU-ryQDq-_tAyEM6ZdMiYhw/exec";
+
+    // 未來女友圖片庫 (請換成你的雲端圖片連結)
     const wifeImages = [
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400", // 圖片 0
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400", // 圖片 1
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400", // 圖片 2
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400", // 圖片 3
-        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"  // 圖片 4
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400", 
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400", 
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400", 
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400", 
+        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"  
     ];
 
-    // 頁面切換邏輯
+    // 全域變數，暫存使用者資料
+    let currentUser = { name: "", phone: "" };
+
+    // 頁面切換
     function nextStep(currentStep, isYes) {
         if (isYes) {
             document.getElementById(`step${currentStep}`).classList.add('hidden');
@@ -128,71 +133,93 @@
         }
     }
 
-    // 拒絕非單身用戶
+    // 拒絕非單身
     function rejectUser() {
         alert("恭喜祝你長長久久！(非單身請勿遊玩 XD)");
-        location.reload(); // 重新整理頁面
+        location.reload();
     }
 
-    // 開始預測
-    function startPrediction() {
-        const name = document.getElementById('userName').value;
-        const phone = document.getElementById('userPhone').value;
+    // 傳送資料到 Google Sheet 的通用函式
+    function sendDataToSheet(actionMsg) {
+        // 準備要傳的資料
+        const data = {
+            name: currentUser.name,
+            phone: currentUser.phone,
+            action: actionMsg // 例如："開始預測" 或 "想脫單-請聯絡"
+        };
 
-        if (!name || !phone) {
+        // 使用 fetch 發送 (設定 mode: 'no-cors' 是為了避免跨域錯誤，這是最簡單的方法)
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            mode: 'no-cors', 
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        }).then(() => {
+            console.log("資料已傳送: " + actionMsg);
+        }).catch(error => {
+            console.error('Error!', error.message);
+        });
+    }
+
+    // 按下開始預測
+    function startPrediction() {
+        const nameInput = document.getElementById('userName').value;
+        const phoneInput = document.getElementById('userPhone').value;
+
+        if (!nameInput || !phoneInput) {
             alert("請輸入姓名和電話才能運算喔！");
             return;
         }
 
-        // 隱藏表單，顯示 Loading
+        // 儲存到變數
+        currentUser.name = nameInput;
+        currentUser.phone = phoneInput;
+
+        // 【動作 1】在這裡傳送第一筆資料：紀錄誰來玩了
+        sendDataToSheet("使用者進行了預測");
+
+        // 介面流程
         document.getElementById('step3').classList.add('hidden');
         document.getElementById('loading').classList.remove('hidden');
 
-        // 模擬 AI 運算過程文字跳動
         const msg = document.getElementById('loadingMsg');
         setTimeout(() => { msg.innerText = "正在比對雲端資料庫..."; }, 1000);
         setTimeout(() => { msg.innerText = "配對成功！產生影像中..."; }, 2500);
 
-        // 3秒後顯示結果
         setTimeout(() => {
-            showResult(name, phone);
+            showResult(nameInput, phoneInput);
         }, 3500);
     }
 
-    // 顯示結果 (核心演算法)
+    // 顯示結果
     function showResult(name, phone) {
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
 
-        // === 關鍵演算法 ===
-        // 取出電話的所有數字並相加，確保同一支電話算出同一個 index
         let sum = 0;
         for (let i = 0; i < phone.length; i++) {
-            if (!isNaN(parseInt(phone[i]))) {
-                sum += parseInt(phone[i]);
-            }
+            if (!isNaN(parseInt(phone[i]))) sum += parseInt(phone[i]);
         }
         
-        // 取餘數 (總和 除以 圖片總張數)
         const index = sum % wifeImages.length; 
-        
-        // 設定圖片
         document.getElementById('futureWifeImg').src = wifeImages[index];
         document.getElementById('resultName').innerText = `恭喜 ${name}！這是 AI 為你計算出的未來對象`;
     }
 
-    // 分享功能
+    // 分享
     function shareResult() {
-        // 因為是純前端，這裡先用複製連結代替
         alert("連結已複製！快去傳給朋友看！");
     }
 
-    // 想脫單功能
+    // 想脫單
     function wantToDate() {
-        // 這裡未來會接 Google Sheets API
-        alert("收到！再過不久會有聖誕秘書聯絡你 🎅");
+        // 【動作 2】在這裡傳送第二筆資料：紀錄他想脫單
+        sendDataToSheet("★超級想脫單-請聖誕秘書聯絡★");
+
+        alert("收到！已將你的意願傳送給聖誕秘書，請靜候佳音 🎅");
         
-        // 為了增加趣味，可以把按鈕變灰
         const btn = event.target;
         btn.innerText = "已預約聖誕秘書";
         btn.disabled = true;
