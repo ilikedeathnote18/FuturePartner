@@ -265,12 +265,20 @@
 </div>
 
 <script>
-    // ⚠️【請將這裡換成你剛剛更新部署後的 Google Apps Script 網址】⚠️
-    const scriptURL = "https://script.google.com/macros/s/AKfycby7A67cffg8adasBWZo0eeO61DHmF3CHHchedP6mPIf4vFXU-ryQDq-_tAyEM6ZdMiYhw/exec";
+    // ⚠️【記得替換成你的 Google Apps Script 網址】⚠️
+    const scriptURL = "https://script.google.com/macros/s/你的網址...../exec";
+
+    // 圖片庫
+    const wifeImages = [
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400", 
+        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400", 
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400", 
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400", 
+        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"  
+    ];
 
     let currentUser = { name: "", phone: "" };
 
-    // 頁面切換
     function nextStep(currentStep, isYes) {
         if (isYes) {
             document.getElementById(`step${currentStep}`).classList.add('hidden');
@@ -278,18 +286,39 @@
         }
     }
 
-    // 詛咒特效
+    // ★ 新增的詛咒特效邏輯 ★
     function triggerCurse() {
         const overlay = document.getElementById('curse-overlay');
+        
+        // 1. 顯示黑色遮罩
         overlay.style.display = 'flex';
+        
+        // 2. 讓整個網頁開始劇烈震動
         document.body.classList.add('shake-body');
+        
+        // 3. 播放音效 (可選，瀏覽器可能會阻擋自動播放，這裡先做純視覺)
+        
+        // 4. 2.5秒後重整頁面
         setTimeout(() => {
             alert("系統偵測到謊言...強制終止連線！");
             location.reload();
         }, 2500);
     }
 
-    // ★ 修改過的核心功能：開始預測 ★
+    function sendDataToSheet(actionMsg) {
+        const data = {
+            name: currentUser.name,
+            phone: currentUser.phone,
+            action: actionMsg 
+        };
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            mode: 'no-cors', 
+            headers: { 'Content-Type': 'text/plain' }
+        }).catch(error => console.error('Error!', error.message));
+    }
+
     function startPrediction() {
         const nameInput = document.getElementById('userName').value;
         const phoneInput = document.getElementById('userPhone').value;
@@ -301,79 +330,36 @@
 
         currentUser.name = nameInput;
         currentUser.phone = phoneInput;
+        sendDataToSheet("使用者進行了預測");
 
-        // 1. 切換到 Loading 畫面
         document.getElementById('step3').classList.add('hidden');
         document.getElementById('loading').classList.remove('hidden');
+
         const msg = document.getElementById('loadingMsg');
-        
-        msg.innerText = "正在連線 Google 雲端資料庫...";
+        setTimeout(() => { msg.innerText = "正在掃描雲端大數據..."; }, 1000);
+        setTimeout(() => { msg.innerText = "配對成功！解析影像中..."; }, 2500);
 
-        // 2. 呼叫後端 (GET 请求)
-        // 組合網址參數
-        const requestUrl = `${scriptURL}?type=predict&name=${encodeURIComponent(nameInput)}&phone=${encodeURIComponent(phoneInput)}`;
-
-        fetch(requestUrl)
-            .then(response => response.json()) // 解析 JSON
-            .then(data => {
-                console.log("收到資料:", data);
-                
-                // 模擬一點運算延遲感，不然跑太快沒感覺
-                setTimeout(() => {
-                    msg.innerText = "配對成功！下載影像中...";
-                }, 1000);
-
-                setTimeout(() => {
-                    // 3. 顯示結果
-                    showResult(nameInput, data.imageUrl);
-                }, 2500);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("連線發生錯誤，請稍後再試！");
-                location.reload(); // 出錯就重來
-            });
+        setTimeout(() => {
+            showResult(nameInput, phoneInput);
+        }, 3500);
     }
 
-    // 顯示結果 (現在直接接收後端給的 URL)
-    function showResult(name, imageUrl) {
+    function showResult(name, phone) {
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
 
-        // 設定圖片
-        const img = document.getElementById('futureWifeImg');
-        img.src = imageUrl;
+        let sum = 0;
+        for (let i = 0; i < phone.length; i++) {
+            if (!isNaN(parseInt(phone[i]))) sum += parseInt(phone[i]);
+        }
         
-        // 處理圖片載入失敗的情況 (例如權限沒開)
-        img.onerror = function() {
-            this.src = "https://via.placeholder.com/400x400?text=Image+Load+Error";
-            alert("圖片載入失敗！請確認 Google Drive 資料夾權限是否設為「公開」");
-        };
-
-        document.getElementById('resultName').innerHTML = `恭喜 <span style="color:#ff758c">${name}</span><br>這是 AI 從雲端為你匹配的對象`;
+        const index = sum % wifeImages.length; 
+        document.getElementById('futureWifeImg').src = wifeImages[index];
+        document.getElementById('resultName').innerHTML = `恭喜 <span style="color:#ff758c">${name}</span><br>這是 AI 為你計算出的命定之人`;
     }
 
-    // 想脫單功能 (也是呼叫後端)
-    function wantToDate() {
-        const btn = event.target;
-        btn.innerText = "傳送中...";
-        
-        const requestUrl = `${scriptURL}?type=date&name=${encodeURIComponent(currentUser.name)}&phone=${encodeURIComponent(currentUser.phone)}`;
-        
-        fetch(requestUrl)
-            .then(response => response.json())
-            .then(data => {
-                alert("收到！已將你的意願加密傳送給聖誕秘書，請靜候佳音 🎅");
-                btn.innerText = "已預約聖誕秘書";
-                btn.disabled = true;
-                btn.style.background = "#ccc";
-                btn.style.transform = "none";
-                btn.style.boxShadow = "none";
-            });
-    }
-
-    // 分享功能
     function shareResult() {
+        // 使用原生的分享功能 (手機上效果最好)
         if (navigator.share) {
             navigator.share({
                 title: 'AI 未來伴侶預測',
@@ -383,6 +369,17 @@
         } else {
             alert("連結已複製！快去傳給朋友看！");
         }
+    }
+
+    function wantToDate() {
+        sendDataToSheet("★超級想脫單-請聖誕秘書聯絡★");
+        alert("收到！已將你的意願加密傳送給聖誕秘書，請靜候佳音 🎅");
+        const btn = event.target;
+        btn.innerText = "已預約聖誕秘書";
+        btn.disabled = true;
+        btn.style.background = "#ccc";
+        btn.style.transform = "none";
+        btn.style.boxShadow = "none";
     }
 </script>
 
