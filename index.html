@@ -16,17 +16,15 @@
 
         body {
             font-family: 'Microsoft JhengHei', sans-serif;
-            /* 背景：流動的粉紫科技漸層 */
             background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden; /* 防止震動時出現卷軸 */
+            overflow: hidden;
         }
 
-        /* 毛玻璃卡片容器 */
         .container {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
@@ -57,14 +55,13 @@
 
         p { color: #666; line-height: 1.6; }
 
-        /* 按鈕優化 */
         .btn {
             display: block;
             width: 100%;
             padding: 15px;
             margin: 15px 0;
             border: none;
-            border-radius: 50px; /* 膠囊狀 */
+            border-radius: 50px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
@@ -74,7 +71,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        /* 戀愛系按鈕 (主按鈕) */
         .btn-love {
             background: linear-gradient(to right, #ff758c, #ff7eb3);
             color: white;
@@ -84,7 +80,6 @@
             box-shadow: 0 8px 20px rgba(255, 117, 140, 0.4);
         }
         
-        /* 科技系/一般按鈕 (副按鈕) */
         .btn-tech {
             background: linear-gradient(to right, #4facfe, #00f2fe);
             color: white;
@@ -94,7 +89,6 @@
             box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
         }
 
-        /* 危險/拒絕按鈕 */
         .btn-danger {
             background: linear-gradient(to right, #ff9966, #ff5e62);
             color: white;
@@ -104,12 +98,10 @@
             box-shadow: 0 8px 20px rgba(255, 94, 98, 0.4);
         }
 
-        /* 按鈕點擊效果 */
         .btn:active {
             transform: scale(0.98);
         }
 
-        /* 輸入框美化 */
         input {
             width: 100%;
             padding: 15px;
@@ -129,7 +121,6 @@
 
         .hidden { display: none; }
 
-        /* 結果圖片 */
         .result-img {
             width: 100%;
             height: auto;
@@ -140,13 +131,12 @@
             animation: fadeIn 1s ease;
         }
 
-        /* 詛咒特效層 (全螢幕覆蓋) */
         #curse-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: black;
             z-index: 999;
-            display: none; /* 預設隱藏 */
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -161,7 +151,6 @@
             animation: glitch 0.2s infinite;
         }
 
-        /* 震動動畫 */
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
             10% { transform: translate(-1px, -2px) rotate(-1deg); }
@@ -176,7 +165,6 @@
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
-        /* 故障雜訊動畫 */
         @keyframes glitch {
             0% { transform: translate(0) }
             20% { transform: translate(-2px, 2px) }
@@ -265,20 +253,13 @@
 </div>
 
 <script>
-    // ⚠️【記得替換成你的 Google Apps Script 網址】⚠️
+    // ⚠️【請將這裡換成你 Google Apps Script 的網址】⚠️
     const scriptURL = "https://script.google.com/macros/s/AKfycby7A67cffg8adasBWZo0eeO61DHmF3CHHchedP6mPIf4vFXU-ryQDq-_tAyEM6ZdMiYhw/exec";
 
-    // 圖片庫
-    const wifeImages = [
-        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400", 
-        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400", 
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400", 
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400", 
-        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"  
-    ];
-
+    // 暫存使用者資料
     let currentUser = { name: "", phone: "" };
 
+    // 頁面切換
     function nextStep(currentStep, isYes) {
         if (isYes) {
             document.getElementById(`step${currentStep}`).classList.add('hidden');
@@ -286,39 +267,18 @@
         }
     }
 
-    // ★ 新增的詛咒特效邏輯 ★
+    // 詛咒特效
     function triggerCurse() {
         const overlay = document.getElementById('curse-overlay');
-        
-        // 1. 顯示黑色遮罩
         overlay.style.display = 'flex';
-        
-        // 2. 讓整個網頁開始劇烈震動
         document.body.classList.add('shake-body');
-        
-        // 3. 播放音效 (可選，瀏覽器可能會阻擋自動播放，這裡先做純視覺)
-        
-        // 4. 2.5秒後重整頁面
         setTimeout(() => {
             alert("系統偵測到謊言...強制終止連線！");
             location.reload();
         }, 2500);
     }
 
-    function sendDataToSheet(actionMsg) {
-        const data = {
-            name: currentUser.name,
-            phone: currentUser.phone,
-            action: actionMsg 
-        };
-        fetch(scriptURL, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'text/plain' }
-        }).catch(error => console.error('Error!', error.message));
-    }
-
+    // ★ 修正後的核心邏輯：傳送資料並等待 Base64 照片 ★
     function startPrediction() {
         const nameInput = document.getElementById('userName').value;
         const phoneInput = document.getElementById('userPhone').value;
@@ -330,36 +290,59 @@
 
         currentUser.name = nameInput;
         currentUser.phone = phoneInput;
-        sendDataToSheet("使用者進行了預測");
 
+        // 1. 切換介面
         document.getElementById('step3').classList.add('hidden');
         document.getElementById('loading').classList.remove('hidden');
-
         const msg = document.getElementById('loadingMsg');
-        setTimeout(() => { msg.innerText = "正在掃描雲端大數據..."; }, 1000);
-        setTimeout(() => { msg.innerText = "配對成功！解析影像中..."; }, 2500);
+        msg.innerText = "正在連線 Google 雲端資料庫...";
 
-        setTimeout(() => {
-            showResult(nameInput, phoneInput);
-        }, 3500);
+        // 2. 組合 GET 請求網址 (帶上 name 和 phone)
+        const requestUrl = `${scriptURL}?type=predict&name=${encodeURIComponent(nameInput)}&phone=${encodeURIComponent(phoneInput)}`;
+
+        // 3. 發送請求
+        fetch(requestUrl)
+            .then(response => response.json()) // 解析 JSON
+            .then(data => {
+                console.log("收到資料:", data);
+                
+                if(data.status === "error") {
+                    alert("錯誤：" + data.message);
+                    location.reload();
+                    return;
+                }
+
+                // 模擬運算延遲，增加期待感
+                setTimeout(() => {
+                    msg.innerText = "配對成功！解析影像編碼中...";
+                }, 1000);
+
+                setTimeout(() => {
+                    // 顯示結果
+                    showResult(nameInput, data.imageUrl);
+                }, 2500);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("連線發生錯誤，請檢查網址或稍後再試！");
+                location.reload();
+            });
     }
 
-    function showResult(name, phone) {
+    // 顯示結果 (imageUrl 現在是 Base64 代碼)
+    function showResult(name, imageUrl) {
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('result').classList.remove('hidden');
 
-        let sum = 0;
-        for (let i = 0; i < phone.length; i++) {
-            if (!isNaN(parseInt(phone[i]))) sum += parseInt(phone[i]);
-        }
+        // 直接把 Base64 代碼塞進 src
+        const img = document.getElementById('futureWifeImg');
+        img.src = imageUrl;
         
-        const index = sum % wifeImages.length; 
-        document.getElementById('futureWifeImg').src = wifeImages[index];
-        document.getElementById('resultName').innerHTML = `恭喜 <span style="color:#ff758c">${name}</span><br>這是 AI 為你計算出的命定之人`;
+        document.getElementById('resultName').innerHTML = `恭喜 <span style="color:#ff758c">${name}</span><br>這是 AI 從雲端為你匹配的對象`;
     }
 
+    // 分享功能
     function shareResult() {
-        // 使用原生的分享功能 (手機上效果最好)
         if (navigator.share) {
             navigator.share({
                 title: 'AI 未來伴侶預測',
@@ -371,15 +354,24 @@
         }
     }
 
+    // 想脫單功能 (修正為 GET 請求)
     function wantToDate() {
-        sendDataToSheet("★超級想脫單-請聖誕秘書聯絡★");
-        alert("收到！已將你的意願加密傳送給聖誕秘書，請靜候佳音 🎅");
         const btn = event.target;
-        btn.innerText = "已預約聖誕秘書";
-        btn.disabled = true;
-        btn.style.background = "#ccc";
-        btn.style.transform = "none";
-        btn.style.boxShadow = "none";
+        btn.innerText = "傳送中...";
+        
+        // 組合網址
+        const requestUrl = `${scriptURL}?type=date&name=${encodeURIComponent(currentUser.name)}&phone=${encodeURIComponent(currentUser.phone)}`;
+        
+        fetch(requestUrl)
+            .then(response => response.json())
+            .then(data => {
+                alert("收到！已將你的意願加密傳送給聖誕秘書，請靜候佳音 🎅");
+                btn.innerText = "已預約聖誕秘書";
+                btn.disabled = true;
+                btn.style.background = "#ccc";
+                btn.style.transform = "none";
+                btn.style.boxShadow = "none";
+            });
     }
 </script>
 
