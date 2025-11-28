@@ -19,13 +19,11 @@
             background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
             display: flex;
             justify-content: center;
-            /* align-items: center;  <-- 移除這個，避免手機版內容太長時頂部被切掉 */
             min-height: 100vh;
             margin: 0;
-            /* ★ 關鍵修改：允許垂直滾動，但隱藏水平滾動(避免震動時出現卷軸) ★ */
             overflow-y: auto; 
             overflow-x: hidden;
-            padding: 20px 0; /* 增加上下緩衝空間 */
+            padding: 20px 0;
         }
 
         .container {
@@ -42,7 +40,9 @@
             position: relative;
             z-index: 10;
             transition: transform 0.3s;
-            margin: auto; /* 確保垂直置中 */
+            margin: auto;
+            /* 為了不被下方的浮水印擋住，增加一點下方邊距 */
+            margin-bottom: 50px; 
         }
 
         h2 {
@@ -106,7 +106,6 @@
             transform: scale(0.98);
         }
 
-        /* 輸入框樣式優化 */
         input {
             width: 100%;
             padding: 15px;
@@ -175,6 +174,21 @@
             font-size: 16px;
             color: var(--tech-blue);
             font-weight: bold;
+        }
+
+        /* ★ 新增：底部浮水印樣式 ★ */
+        .footer-watermark {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            color: rgba(100, 100, 100, 0.5); /* 半透明的灰色 */
+            font-size: 13px;
+            font-weight: bold;
+            pointer-events: none; /* 讓點擊可以穿透它，不會擋到按鈕 */
+            z-index: 9999; /* 確保浮在最上面 */
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
         }
 
         @keyframes shake {
@@ -293,7 +307,7 @@
     </div>
 </div>
 
-    <div class="footer-watermark">[供交友平台使用]</div>
+<div class="footer-watermark">[供交友平台使用]</div>
 
 <script>
     // ⚠️【請將這裡換成你 Google Apps Script 的網址】⚠️
